@@ -116,4 +116,31 @@ describe("solana-twitter", () => {
 
   });
 
+  it('cannot provide content with more than 280 characters', async () => {
+    try {
+      // set up tweet account
+      const tweet = anchor.web3.Keypair.generate();
+
+      const contentWith281Chars: string = 'x'.repeat(281);
+
+      await program.methods.sendTweet('Content too long', contentWith281Chars).accounts({
+        tweet: tweet.publicKey, // tweet account public key
+        author: program.provider.publicKey, // other user account public key
+        systemProgram: anchor.web3.SystemProgram.programId, // system program id
+      }).signers([tweet]).rpc();
+
+    } catch (error) {
+      if (error instanceof AnchorError) {
+        assert.equal(error.error.errorMessage, 'The provided content should be 280 characters long maximum.');
+      } else {
+        assert.fail("The error was the wrong type.")
+      }
+
+      return;
+    }
+
+    assert.fail("The instruction should fail with a 281 char content.")
+
+  });
+
 });

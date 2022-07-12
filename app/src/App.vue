@@ -1,26 +1,35 @@
-<template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
-</template>
+<script setup>
+// import { useRoute } from 'vue-router';
+import { PhantomWalletAdapter, SolflareWalletAdapter } from '@solana/wallet-adapter-wallets';
+import { initWallet } from 'solana-wallets-vue';
+import { WalletMultiButton } from 'solana-wallets-vue';
+import { initWorkspace, useWorkspace } from "./workspace.js";
 
-<script>
-import HelloWorld from './components/HelloWorld.vue'
+// const route = useRoute();
 
-export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+const wallets = [
+    new PhantomWalletAdapter(),
+    new SolflareWalletAdapter(),
+];
+
+initWallet({ wallets, autoConnect: true });
+initWorkspace();
+
+const { wallet } = useWorkspace();
+
+
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+<template>
+  <WalletMultiButton />
+
+  <div v-if="wallet">
+    Connected! {{ wallet.publicKey.toBase58() }}
+    <router-view></router-view>
+  </div>
+  <div v-else>
+    Connect your wallet!
+  </div>
+
+
+</template>

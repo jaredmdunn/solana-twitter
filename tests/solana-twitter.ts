@@ -61,4 +61,31 @@ describe("solana-twitter", () => {
 
   });
 
+  it('can send a new tweet without a topic', async () => {
+    // set up otherUser account
+    const otherUser = anchor.web3.Keypair.generate();
+    // request money for other user
+    const signature = await program.provider.connection.requestAirdrop(otherUser.publicKey, 1000000000);
+    // confirm transaction to give money to other user
+    await program.provider.connection.confirmTransaction(signature);
+
+    // set up tweet account
+    const tweet = anchor.web3.Keypair.generate();
+
+    await program.methods.sendTweet('moonshot', 'Other users can tweet too!').accounts({
+      tweet: tweet.publicKey, // tweet account public key
+      author: otherUser.publicKey, // other user account public key
+      systemProgram: anchor.web3.SystemProgram.programId, // system program id
+    }).signers([otherUser, tweet]).rpc();
+
+    const tweetAccount = await program.account.tweet.fetch(tweet.publicKey);
+    console.log(tweetAccount);
+
+    assert.equal(tweetAccount.author.toBase58(), otherUser.publicKey.toBase58());
+    assert.equal(tweetAccount.topic, 'moonshot');
+    assert.equal(tweetAccount.content, 'Other users can tweet too!');
+    assert.ok(tweetAccount.timestamp);
+
+  });
+
 });

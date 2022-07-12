@@ -143,4 +143,9 @@ describe("solana-twitter", () => {
 
   });
 
+  it('can fetch all tweets', async () => {
+    const tweets = await program.account.tweet.all();
+    assert.equal(tweets.length, 3);
+  })
+
 });

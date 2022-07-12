@@ -1,5 +1,5 @@
 import * as anchor from "@project-serum/anchor";
-import { Program } from "@project-serum/anchor";
+import { AnchorError, Program } from "@project-serum/anchor";
 import { SolanaTwitter } from "../target/types/solana_twitter";
 import * as assert from "assert";
 
@@ -67,6 +67,7 @@ describe("solana-twitter", () => {
     // request money for other user
     const signature = await program.provider.connection.requestAirdrop(otherUser.publicKey, 1000000000);
     // confirm transaction to give money to other user
+    // TODO: figure out what is current syntax
     await program.provider.connection.confirmTransaction(signature);
 
     // set up tweet account
@@ -85,6 +86,33 @@ describe("solana-twitter", () => {
     assert.equal(tweetAccount.topic, 'moonshot');
     assert.equal(tweetAccount.content, 'Other users can tweet too!');
     assert.ok(tweetAccount.timestamp);
+
+  });
+
+  it('cannot provide a topic with more than 50 characters', async () => {
+    try {
+      // set up tweet account
+      const tweet = anchor.web3.Keypair.generate();
+
+      const topicWith51Chars: string = 'x'.repeat(51);
+
+      await program.methods.sendTweet(topicWith51Chars, 'Topic too long').accounts({
+        tweet: tweet.publicKey, // tweet account public key
+        author: program.provider.publicKey, // other user account public key
+        systemProgram: anchor.web3.SystemProgram.programId, // system program id
+      }).signers([tweet]).rpc();
+
+    } catch (error) {
+      if (error instanceof AnchorError) {
+        assert.equal(error.error.errorMessage, 'The provided topic should be 50 characters long maximum.');
+      } else {
+        assert.fail("The error was the wrong type.")
+      }
+
+      return;
+    }
+
+    assert.fail("The instruction should fail with a 51 char topic.")
 
   });
 

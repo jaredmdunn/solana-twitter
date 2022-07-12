@@ -41,4 +41,24 @@ describe("solana-twitter", () => {
     assert.ok(tweetAccount.timestamp);
 
   });
+
+  it('can send a new tweet without a topic', async () => {
+    const tweet = anchor.web3.Keypair.generate();
+
+    await program.methods.sendTweet('', 'gm').accounts({
+      tweet: tweet.publicKey, // tweet account public key
+      author: program.provider.publicKey, // author account public key
+      systemProgram: anchor.web3.SystemProgram.programId, // system program id
+    }).signers([tweet]).rpc();
+
+    const tweetAccount = await program.account.tweet.fetch(tweet.publicKey);
+    console.log(tweetAccount);
+
+    assert.equal(tweetAccount.author.toBase58(), program.provider.publicKey.toBase58());
+    assert.equal(tweetAccount.topic, '');
+    assert.equal(tweetAccount.content, 'gm');
+    assert.ok(tweetAccount.timestamp);
+
+  });
+
 });

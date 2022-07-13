@@ -18,7 +18,7 @@ export const sendTweet = async (topic, content) => {
   const tweet = web3.Keypair.generate();
 
   // 3. Send a "SendTweet" instruction with the right data and the right accounts.
-  const response = await program.value.methods.sendTweet(topic, content).accounts({
+  await program.value.methods.sendTweet(topic, content).accounts({
     author: wallet.value.publicKey, // author account public key
     tweet: tweet.publicKey, // tweet account public key
     systemProgram: web3.SystemProgram.programId, // system program id

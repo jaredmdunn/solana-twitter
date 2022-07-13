@@ -1,11 +1,21 @@
 <script setup>
 import {ref} from "vue";
-import {fetchTweets} from "../workspace.js";
+import {fetchTweets, sendTweet} from "../tweets.js";
 
 const tweets = ref([]);
 const loading = ref(true);
 
+const topic = ref("");
+const content = ref("");
+
 fetchTweets().then(fetchedTweets => tweets.value = fetchedTweets).finally(() => loading.value = false);
+
+const send = async () => {
+  const tweet = await sendTweet(topic.value, content.value);
+  console.log(tweet);
+  topic.value = "";
+  content.value = "";
+}
 
 </script>
 
@@ -16,6 +26,11 @@ fetchTweets().then(fetchedTweets => tweets.value = fetchedTweets).finally(() => 
     Tweets loading
   </div>
   <div v-else>
+    <div class="flex flex-col">
+      <input id="topic" placeholder="topic" v-model="topic">
+      <textarea id="content" placeholder="content" v-model="content"></textarea>
+      <button @click="send">Submit</button>
+    </div>
     Tweets loaded!
     <div v-for="tweet in tweets" :key="tweet.publicKey" class="m-10">
       <div>Author: {{tweet.account.author.toBase58()}}</div>

@@ -12,9 +12,9 @@ fetchTweets().then(fetchedTweets => tweets.value = fetchedTweets).finally(() => 
 
 const send = async () => {
   const tweet = await sendTweet(topic.value, content.value);
-  console.log(tweet);
   topic.value = "";
   content.value = "";
+  tweets.value.push(tweet);
 }
 
 </script>

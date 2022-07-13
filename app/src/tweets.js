@@ -26,5 +26,5 @@ export const sendTweet = async (topic, content) => {
 
   // 4. Fetch the newly created account from the blockchain.
   const tweetAccount = await program.value.account.tweet.fetch(tweet.publicKey, "recent");
-  return tweetAccount;
+  return { account: tweetAccount, publicKey: tweet.publicKey };
 };

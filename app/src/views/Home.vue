@@ -1,6 +1,9 @@
 <script setup>
-import {ref} from "vue";
+import {ref, computed} from "vue";
 import {fetchTweets, sendTweet} from "../tweets.js";
+import {useWorkspace} from "@/workspace.js";
+
+const {wallet} = useWorkspace();
 
 const tweets = ref([]);
 const loading = ref(true);
@@ -9,6 +12,10 @@ const topic = ref("");
 const content = ref("");
 
 fetchTweets().then(fetchedTweets => tweets.value = fetchedTweets).finally(() => loading.value = false);
+
+const canTweet = computed(() => {
+  return wallet && wallet.value && wallet.value.publicKey.toString() === "5bobMwjqaaydwBa3xSKLqLJjpZhJk11H3c8GtTcnsFca";
+})
 
 const send = async () => {
   const tweet = await sendTweet(topic.value, content.value);
@@ -26,7 +33,7 @@ const send = async () => {
     Tweets loading
   </div>
   <div v-else>
-    <div class="flex flex-col">
+    <div class="flex flex-col" v-if="canTweet">
       <input id="topic" placeholder="topic" v-model="topic">
       <textarea id="content" placeholder="content" v-model="content"></textarea>
       <button @click="send">Submit</button>
